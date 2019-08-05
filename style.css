@@ -1,0 +1,12 @@
+a, a:hover, a:active {
+    color: #000000;
+    text-decoration: none;
+}
+
+.export-checkbox {
+    position: relative; 
+    left: -25px;
+    top: 26px; 
+    width: 15px; 
+    height: 15px; 
+}
