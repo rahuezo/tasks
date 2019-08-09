@@ -1,12 +1,10 @@
 const sqlite = require('sqlite3').verbose();
-
-const tasksDb = "tasks.db";
+const tasksDb = process.env.DB_PATH;
 
 class Database {
     constructor(filePath) {
         this.db = new sqlite.Database(filePath, (err) => {
             if (err) return console.log(err.message);
-            console.log("Connected to tasks.db");
         }); 
     }
 

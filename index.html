@@ -29,18 +29,39 @@
         const Database = require('./database.js').Database;
         const Dialog = require('electron').remote.dialog;
     </script>
+
+    <style>
+        i {
+            pointer-events: none;
+        }
+
+        #no-tasks-msg {
+            margin-top: 100px; 
+        }
+
+        #form-collapse-btn {
+            width: 115px; 
+            height: 16px;
+            font-size: 12px; 
+            line-height: 12px;
+            padding-top: 2px; 
+            margin-top: -13px;
+            border-top-left-radius: 0px; 
+            border-top-right-radius: 0px;
+        }
+    </style>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <a class="navbar-brand" href="#"><strong>Tasks</strong></a>
     
-        <form class="form-inline my-2 my-lg-0" id="export-form">
+        <form class="form-inline my-2 my-lg-0 ml-auto" id="export-form">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Export <i class="fas fa-file-export"></i></button>
         </form>
     </nav>
 
-    <div class="jumbotron jumbotron-fluid">
+    <div class="jumbotron jumbotron-fluid collapse show mb-0" id="form-collapse">
         <div class="container">
             <form id="task-form">
                 <div class="form-row">
@@ -77,7 +98,21 @@
             </form>
         </div>
     </div>
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <button type="button" class="btn btn-warning" id="form-collapse-btn"
+                    data-form_open="true"
+                    data-toggle="collapse" 
+                    data-target="#form-collapse" 
+                    aria-expanded="false" 
+                    aria-controls="form-collapse">
 
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="task-groups" class="container mb-4"></div>
 
     <div class="toast" style="position: absolute; top: 73px; right: 2px;" role="alert" aria-live="assertive" aria-atomic="true">
@@ -99,6 +134,18 @@
         
         $(document).ready(() => {
             
+            $("#form-collapse-btn").click(function(){
+                if ($(this).data("form_open") == "false") {
+                    $(this).data("form_open", "true");
+                    $(this).html('<i class="fas fa-chevron-up"></i>');
+                    
+                } else {
+                    $(this).data("form_open", "false");
+                    $(this).html('<i class="fas fa-chevron-down"></i>');
+                    
+                }
+            });
+
             // Initialize
             init(); 
             $('.toast').toast({
@@ -155,7 +202,7 @@
 
             Database.getTaskGroups().then(tgs => {
                 if (tgs.length == 0) {
-                    $(`#${taskGroupsDivId}`).html("<h5 class='text-muted text-center'>There are no tasks to show.</h5>")
+                    $(`#${taskGroupsDivId}`).html("<h5 class='text-muted text-center' id='no-tasks-msg'>There are no tasks to show.</h5>")
                     return; 
                 }
                 tgs.forEach(tg => {

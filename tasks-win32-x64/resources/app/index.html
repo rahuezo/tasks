@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <title>Tasks</title>
+
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+        integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+        
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="./style.css" />
+    
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+    <script>
+        const moment = require('moment');
+        const TaskGroup = require('./task-group.js').TaskGroup; 
+        const Task = require('./task.js').Task; 
+        const Database = require('./database.js').Database;
+        const Dialog = require('electron').remote.dialog;
+    </script>
+
+    <style>
+        i {
+            pointer-events: none;
+        }
+
+        #no-tasks-msg {
+            margin-top: 100px; 
+        }
+
+        #form-collapse-btn {
+            width: 115px; 
+            height: 16px;
+            font-size: 12px; 
+            line-height: 12px;
+            padding-top: 2px; 
+            margin-top: -13px;
+            border-top-left-radius: 0px; 
+            border-top-right-radius: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <a class="navbar-brand" href="#"><strong>Tasks</strong></a>
+    
+        <form class="form-inline my-2 my-lg-0 ml-auto" id="export-form">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Export <i class="fas fa-file-export"></i></button>
+        </form>
+    </nav>
+
+    <div class="jumbotron jumbotron-fluid collapse show mb-0" id="form-collapse">
+        <div class="container">
+            <form id="task-form">
+                <div class="form-row">
+                    <div class="form-group col-4">
+                        <label for="task-date"><strong>Date</strong></label>
+                        <input type="date" class="form-control" id="task-date" required>
+                    </div>                    
+                    <div class="form-group col-4">
+                        <label for="task-start-time"><strong>Start</strong></label>
+                        <input type="time" class="form-control" id="task-start-time" required>
+                    </div>
+                    <div class="form-group col-4">
+                        <label for="task-end-time"><strong>End</strong></label>
+                        <input type="time" class="form-control" id="task-end-time" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="task-customer"><strong>Customer</strong></label>
+                        <input type="text" class="form-control" id="task-customer" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="task-number"><strong>Task</strong></label>
+                        <input type="text" class="form-control" id="task-number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label for="task-notes"><strong>Notes</strong></label>
+                        <textarea class="form-control" id="task-notes" required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary float-right">Add Task</button>
+            </form>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <button type="button" class="btn btn-warning" id="form-collapse-btn"
+                    data-form_open="true"
+                    data-toggle="collapse" 
+                    data-target="#form-collapse" 
+                    aria-expanded="false" 
+                    aria-controls="form-collapse">
+
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="task-groups" class="container mb-4"></div>
+
+    <div class="toast" style="position: absolute; top: 73px; right: 2px;" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">            
+            <strong class="mr-auto text-success"><i class="fas fa-check-circle"></i> Success</strong>
+            
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+    
+    <!-- Utilities JS -->
+    <script src="task-utilities.js"></script>
+
+    <script>
+        const taskGroupsDivId = "task-groups";
+        
+        $(document).ready(() => {
+            
+            $("#form-collapse-btn").click(function(){
+                if ($(this).data("form_open") == "false") {
+                    $(this).data("form_open", "true");
+                    $(this).html('<i class="fas fa-chevron-up"></i>');
+                    
+                } else {
+                    $(this).data("form_open", "false");
+                    $(this).html('<i class="fas fa-chevron-down"></i>');
+                    
+                }
+            });
+
+            // Initialize
+            init(); 
+            $('.toast').toast({
+                delay: 3000
+            });
+
+            $("#task-form").submit((event) => {
+                let taskDate = $("#task-date").val(); 
+                let taskStart = $("#task-start-time").val(); 
+                let taskEnd = $("#task-end-time").val(); 
+                let taskCustomer = $("#task-customer").val(); 
+                let taskNumber = $("#task-number").val(); 
+                let taskNotes = $("#task-notes").val(); 
+
+                Database.addTask(taskDate, taskStart, taskEnd, taskCustomer, taskNumber, taskNotes)
+                .then(() => {
+                    init();
+                    $(".toast-body").text(`Successfully created task!`);
+                    $(".toast").toast("show");
+                });
+
+                event.preventDefault();
+            });
+            
+            $("#export-form").submit((event) => {
+                exportSelectedTasks(); 
+                
+                event.preventDefault();
+            }); 
+        });
+
+        let deleteTask = (taskId) => {
+            Database.deleteTask(taskId);
+            init();
+            $(".toast-body").text(`Successfully deleted task!`);
+            $(".toast").toast("show");
+        };
+
+        let clearForm = () => {
+            setTodaysDate(); 
+            setTime("task-start-time");
+            setTime("task-end-time", 1);
+
+            $("#task-customer").val(""); 
+            $("#task-number").val(""); 
+            $("#task-notes").val(""); 
+
+        };
+
+        let init = () => {
+            clearForm(); 
+            
+            $(`#${taskGroupsDivId}`).empty(); 
+
+            Database.getTaskGroups().then(tgs => {
+                if (tgs.length == 0) {
+                    $(`#${taskGroupsDivId}`).html("<h5 class='text-muted text-center' id='no-tasks-msg'>There are no tasks to show.</h5>")
+                    return; 
+                }
+                tgs.forEach(tg => {
+                    let taskDate = tg.TaskDate; 
+                    let taskGroup = new TaskGroup(taskGroupsDivId, taskDate);
+                    
+                    Database.getTasks(tg.TaskDate).then(ts => {
+                        ts.forEach(t => {
+                            console.log(t); 
+                            taskGroup.addTask(new Task(t.ID, t.TaskDate, t.Customer, t.TaskNumber, 
+                                t.TaskStart, t.TaskEnd, t.Notes));
+                        });
+
+                        return new Promise(res => res());
+                    }).then(() => {
+                        taskGroup.draw();
+                    });
+                });
+            });
+        };
+
+        let exportSelectedTasks = () => {
+            let checkedTaskGroups = $('.export-checkbox:checkbox:checked'); 
+            let rows = [];
+
+            $.each(checkedTaskGroups, function (i) {
+                let taskGroupDate = $(this).val();
+
+                Database.getTasks(taskGroupDate)
+                    .then(tasks => {
+                        rows.push(...tasks);
+                        if (i == checkedTaskGroups.length - 1){
+                            Dialog.showSaveDialog({
+                                filters: [
+                                    { name: 'CSV', extensions: ['csv'] },
+                                ]
+                            }, (fileName) => {
+                                if (fileName === undefined || fileName.length == 0){
+                                    console.log("You didn't save the file");
+                                    return;
+                                } 
+                                writeCsv(fileName, rows);  
+                                $(".toast-body").text(`Successfully exported tasks!`);
+                                $(".toast").toast("show");  
+                                checkedTaskGroups.prop("checked", false);
+
+                            }, );                        
+                        }
+                    });
+            });
+        };
+
+    </script>
+
+    
+</body>
+
+</html>
