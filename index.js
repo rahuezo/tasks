@@ -21,7 +21,7 @@ function createWindow () {
   win.loadFile('index.html')
 
   // Open the DevTools.
-//   win.webContents.openDevTools()
+  win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -55,5 +55,9 @@ app.on('activate', () => {
 })
 
 const path = require('path');
+const isDev = require('electron-is-dev');
+
 process.env['APP_PATH'] = app.getAppPath();
-process.env['DB_PATH'] = path.join(app.getAppPath(), 'tasks.db')
+
+const directory = isDev ? process.env.APP_PATH : process.cwd().concat('/app');
+process.env['DB_PATH'] = path.join(directory, '/tasks.db')

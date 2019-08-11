@@ -211,7 +211,6 @@
                     
                     Database.getTasks(tg.TaskDate).then(ts => {
                         ts.forEach(t => {
-                            console.log(t); 
                             taskGroup.addTask(new Task(t.ID, t.TaskDate, t.Customer, t.TaskNumber, 
                                 t.TaskStart, t.TaskEnd, t.Notes));
                         });
@@ -241,7 +240,6 @@
                                 ]
                             }, (fileName) => {
                                 if (fileName === undefined || fileName.length == 0){
-                                    console.log("You didn't save the file");
                                     return;
                                 } 
                                 writeCsv(fileName, rows);  

@@ -45,7 +45,7 @@ let writeCsv = (outputPath, rows) => {
 
     csvWriter
     .writeRecords(rows)
-    .then(()=> console.log('The CSV file was written successfully'));
+    .then(()=> {});
 }; 
 
 String.prototype.hashCode = function() {
