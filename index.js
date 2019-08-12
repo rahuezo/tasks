@@ -54,10 +54,10 @@ app.on('activate', () => {
   }
 })
 
-const path = require('path');
-const isDev = require('electron-is-dev');
+// const path = require('path');
+// const isDev = require('electron-is-dev');
 
-process.env['APP_PATH'] = app.getAppPath();
+// process.env['APP_PATH'] = app.getAppPath();
 
-const directory = isDev ? process.env.APP_PATH : process.cwd().concat('/app');
-process.env['DB_PATH'] = path.join(directory, '/tasks.db')
+// const directory = isDev ? process.env.APP_PATH : process.cwd().concat('/app');
+// process.env['DB_PATH'] = path.join(directory, '/tasks.db')
