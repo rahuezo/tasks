@@ -1,11 +1,21 @@
 const sqlite = require('sqlite3').verbose();
-const tasksDb = process.env.DB_PATH;
+const tasksDb = "tasks.db";
 
 class Database {
     constructor(filePath) {
         this.db = new sqlite.Database(filePath, (err) => {
             if (err) return console.log(err.message);
         }); 
+
+
+        this.db.run(`CREATE TABLE IF NOT EXISTS tasks (
+            ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+            TaskDate TEXT NOT NULL,
+            TaskStart TEXT NOT NULL, 
+            TaskEnd TEXT NOT NULL, 
+            Customer TEXT NOT NULL, 
+            TaskNumber INTEGER, 
+            Notes INTEGER)`);
     }
 
     getTaskGroups = () => {
