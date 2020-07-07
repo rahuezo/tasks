@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/rahuezo/tasks#readme",
   "devDependencies": {
-    "electron": "^6.0.0",
+    "electron": "^9.1.0",
     "electron-builder": "^21.2.0"
   },
   "dependencies": {
